@@ -91,7 +91,7 @@ Environment Variables, karena pembuatan akun dilakukan di sisi server.
 
 4. Login di halaman `/login` → tab **Login Admin**.
 
-**Cara B — lewat terminal** (perlu `.env.local` sudah terisi, termasuk `SUPABASE_SERVICE_ROLE_KEY`)
+**Cara C — lewat terminal** (perlu `.env.local` sudah terisi, termasuk `SUPABASE_SERVICE_ROLE_KEY`)
 
 ```bash
 node scripts/buat-admin.mjs admin@smkn1tambelangan.sch.id rahasia123 "Admin Sekolah"
@@ -103,9 +103,19 @@ Cara ini langsung sekalian menyetel perannya jadi admin, tidak perlu SQL tambaha
 > profil dengan peran **alumni** — ini disengaja, supaya alumni yang mendaftar tidak
 > pernah tidak sengaja punya akses admin. Naik pangkat jadi admin harus disengaja.
 
-Untuk menambah admin berikutnya (mis. guru BK), ulangi cara yang sama. Pakai
-`peran = 'operator'` kalau ingin membedakan staf biasa dari admin penuh — keduanya
-punya akses kelola yang sama saat ini.
+**Menambah pengurus berikutnya tidak perlu SQL lagi.** Setelah admin pertama bisa masuk,
+buka menu **Kelola pengguna** di dalam aplikasi. Di situ admin bisa menambah pengurus baru,
+mengganti perannya, mereset password, dan menonaktifkan akun.
+
+Ada dua tingkat peran:
+
+| Peran | Bisa apa |
+|---|---|
+| `admin` | Semua, termasuk menambah & menurunkan akun pengurus lain |
+| `operator` | Kelola data alumni, tracer study, laporan — tapi tidak bisa mengelola akun |
+
+`operator` cocok untuk guru BK atau staf TU. Akun **alumni** tidak muncul di menu itu
+karena dibuat otomatis saat data alumni ditambahkan.
 
 ### 4. (Opsional) Isi data contoh
 

@@ -32,6 +32,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       { sec: "Pengelolaan" },
       { href: "/tracer-masuk", ic: "✉", label: "Tracer masuk", badge: jmlTracer ?? 0 },
       { href: "/sampah", ic: "♻", label: "Kotak sampah", badge: jmlSampah ?? 0 },
+      { href: "/pengguna", ic: "◍", label: "Kelola pengguna" },
       { href: "/log", ic: "≡", label: "Jejak audit" },
     ];
     bawah = [
