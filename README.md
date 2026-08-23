@@ -71,8 +71,23 @@ Tidak ada akun admin bawaan — harus dibuat sekali di awal. Pilih salah satu ca
    update public.profiles
    set peran = 'admin', nama = 'Admin Sekolah'
    where id = (select id from auth.users
-               where email = 'admin@smkn1tambelangan.sch.id');
+               where email = 'admin@smkn1tambelangan.sch.id')
+   returning id, nama, peran;
    ```
+
+   **Perhatikan `returning` di baris terakhir — jangan dihapus.** Tanpa itu, SQL Editor
+   Supabase selalu menjawab *"Success. No rows returned"* baik perintahnya mengubah data
+   maupun tidak, jadi om tidak akan tahu berhasil atau tidak. Dengan `returning`:
+
+   - **muncul satu baris berisi `admin`** → berhasil, lanjut login;
+   - **tetap "Success. No rows returned"** → tidak ada yang berubah, artinya user dengan
+     email itu belum ada. Ulangi langkah 1–2, atau cek daftar akun dengan:
+
+     ```sql
+     select u.email, u.email_confirmed_at is not null as terkonfirmasi, p.peran
+     from auth.users u left join public.profiles p on p.id = u.id
+     order by u.created_at desc;
+     ```
 
 4. Login di halaman `/login` → tab **Login Admin**, pakai email & password tadi.
 
@@ -215,6 +230,11 @@ where u.email = 'ganti@dengan-email-anda.com';
 ```
 
 Kalau barisnya **kosong sama sekali**, berarti usernya belum terbuat — ulangi langkah 3 cara A.
+
+> **Jebakan yang paling sering bikin bingung:** perintah `update`, `insert`, dan `delete`
+> di SQL Editor Supabase **selalu** menjawab *"Success. No rows returned"*, bahkan ketika
+> tidak ada satu baris pun yang berubah. Itu bukan tanda berhasil. Selalu tambahkan
+> `returning *` di akhir perintah supaya kelihatan baris mana yang benar-benar berubah.
 
 Penyebab paling sering, berurutan:
 
