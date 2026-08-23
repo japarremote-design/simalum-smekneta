@@ -193,6 +193,47 @@ Sekali jalan, skrip itu membuat ulang semuanya: `logo.png`, `icon-192.png`, `ico
 
 ---
 
+## Kalau login admin ditolak
+
+Jalankan ini di **Supabase → SQL Editor** (ganti emailnya). Satu perintah, langsung
+memberi tahu apa yang kurang:
+
+```sql
+select
+  u.email,
+  (u.email_confirmed_at is not null) as email_terkonfirmasi,
+  p.peran,
+  case
+    when p.id is null              then 'Profil belum ada — schema.sql belum jalan waktu user dibuat. Hapus user ini, jalankan schema.sql, buat ulang usernya.'
+    when u.email_confirmed_at is null then 'Email belum dikonfirmasi — matikan Confirm email di Authentication > Providers > Email, lalu konfirmasi user ini.'
+    when p.peran = 'alumni'        then 'Peran masih alumni — jalankan perintah UPDATE peran jadi admin (langkah 3 di atas).'
+    else 'Sudah benar. Pakai tab Login Admin, bukan Login Alumni.'
+  end as yang_harus_dibetulkan
+from auth.users u
+left join public.profiles p on p.id = u.id
+where u.email = 'ganti@dengan-email-anda.com';
+```
+
+Kalau barisnya **kosong sama sekali**, berarti usernya belum terbuat — ulangi langkah 3 cara A.
+
+Penyebab paling sering, berurutan:
+
+1. **Langkah UPDATE peran terlewat.** User baru selalu berperan `alumni`.
+2. **"Confirm email" masih aktif.** Matikan — alumni login pakai NISN, emailnya bukan email sungguhan.
+3. **User dibuat sebelum `schema.sql` dijalankan**, jadi trigger pembuat profil belum ada.
+4. **Salah tab.** Akun admin harus lewat tab *Login Admin*.
+
+### Pesan di Console browser yang BUKAN masalah
+
+```
+Banner not shown: beforeinstallpromptevent.preventDefault() called.
+```
+
+Ini normal dan justru tanda fitur "Pasang di HP" bekerja: aplikasi sengaja menahan
+tawaran bawaan Chrome supaya bisa menampilkan ajakan pasang versi sendiri yang lebih rapi.
+
+---
+
 ## Alur kerja harian
 
 ```

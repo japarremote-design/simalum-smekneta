@@ -28,13 +28,44 @@ export async function masuk(_prev: unknown, fd: FormData) {
   const sb = await supabaseServer();
   const { data, error } = await sb.auth.signInWithPassword({ email, password });
   if (error || !data.user) {
-    return { error: peran === "alumni" ? "NISN atau password salah." : "Username atau password salah." };
+    // Pesan dibedakan supaya pengurus aplikasi tahu harus membetulkan apa.
+    const pesan = (error?.message || "").toLowerCase();
+    if (pesan.includes("not confirmed") || pesan.includes("email_not_confirmed")) {
+      return {
+        error:
+          "Email akun ini belum dikonfirmasi. Di Supabase buka Authentication → Providers → Email, " +
+          "matikan “Confirm email”, lalu konfirmasi user ini di menu Users.",
+      };
+    }
+    if (pesan.includes("fetch") || pesan.includes("network") || pesan.includes("upstream")) {
+      return { error: "Tidak bisa menghubungi database. Cek NEXT_PUBLIC_SUPABASE_URL dan koneksi internet." };
+    }
+    if (pesan.includes("rate") || pesan.includes("too many")) {
+      return { error: "Terlalu banyak percobaan login. Tunggu sebentar lalu coba lagi." };
+    }
+    return {
+      error: peran === "alumni" ? "NISN atau password salah." : "Email atau password salah.",
+    };
   }
 
-  const { data: profil } = await sb.from("profiles").select("peran, alumni_id").eq("id", data.user.id).maybeSingle();
+  const { data: profil, error: eProfil } = await sb
+    .from("profiles")
+    .select("peran, alumni_id")
+    .eq("id", data.user.id)
+    .maybeSingle();
+  if (eProfil) {
+    await sb.auth.signOut();
+    return { error: "Gagal membaca profil akun: " + eProfil.message + " — pastikan supabase/schema.sql sudah dijalankan." };
+  }
   if (!profil) {
     await sb.auth.signOut();
-    return { error: "Akun belum punya profil. Hubungi admin sekolah." };
+    return {
+      error:
+        "Akun ini belum punya baris di tabel profiles — biasanya karena user dibuat sebelum schema.sql dijalankan. " +
+        "Jalankan di SQL Editor: insert into public.profiles (id, nama, peran) values ('" +
+        data.user.id +
+        "', 'Admin Sekolah', 'admin');",
+    };
   }
   if (peran === "alumni" && profil.peran !== "alumni") {
     await sb.auth.signOut();
@@ -42,7 +73,12 @@ export async function masuk(_prev: unknown, fd: FormData) {
   }
   if (peran === "admin" && profil.peran === "alumni") {
     await sb.auth.signOut();
-    return { error: "Akun ini adalah akun alumni. Pakai tab Login Alumni." };
+    return {
+      error:
+        "Akun ini masih berperan “alumni”, jadi belum boleh masuk sebagai admin. " +
+        "Kalau ini memang akun pengurus, jalankan di Supabase SQL Editor: " +
+        `update public.profiles set peran = 'admin' where id = (select id from auth.users where email = '${email}');`,
+    };
   }
   if (profil.peran === "alumni" && profil.alumni_id) {
     const { data: a } = await sb.from("alumni").select("deleted_at").eq("id", profil.alumni_id).maybeSingle();
