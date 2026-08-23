@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useTinggiKeCssVar } from "@/lib/ukur";
 
 type PromptPasang = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> };
 
@@ -12,6 +13,7 @@ export default function Pwa() {
   const [ios, setIos] = useState(false);
   const [tutup, setTutup] = useState(false);
   const [sudahTerpasang, setSudahTerpasang] = useState(true);
+  const barRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if ("serviceWorker" in navigator) {
@@ -39,16 +41,38 @@ export default function Pwa() {
     return () => window.removeEventListener("beforeinstallprompt", onPrompt);
   }, []);
 
-  if (tutup || sudahTerpasang || (!prompt && !ios)) return null;
+  const tampil = !tutup && !sudahTerpasang && (prompt !== null || ios);
+
+  return <Bar ref={barRef} tampil={tampil} ios={ios} prompt={prompt} onTutup={() => setTutup(true)} onSelesai={() => setPrompt(null)} />;
+}
+
+function Bar({
+  ref,
+  tampil,
+  ios,
+  prompt,
+  onTutup,
+  onSelesai,
+}: {
+  ref: React.RefObject<HTMLDivElement | null>;
+  tampil: boolean;
+  ios: boolean;
+  prompt: PromptPasang | null;
+  onTutup: () => void;
+  onSelesai: () => void;
+}) {
+  // tinggi bar ditulis ke --pasang-tinggi; tombol WhatsApp naik sebanyak itu
+  useTinggiKeCssVar(ref, "--pasang-tinggi", tampil);
+  if (!tampil) return null;
 
   return (
-    <div className="pasang-bar no-print" role="region" aria-label="Pasang aplikasi">
+    <div ref={ref} className="pasang-bar no-print" role="region" aria-label="Pasang aplikasi">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/icon-192.png" alt="" width={38} height={38} style={{ borderRadius: 9, flex: "none" }} />
+      <img src="/icon-192.png" alt="" width={34} height={34} style={{ borderRadius: 8, flex: "none" }} />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <b style={{ display: "block", fontSize: 13.5 }}>Pasang SIMALUM di HP</b>
-        <span className="small muted">
-          {ios ? "Ketuk ikon Bagikan, lalu pilih “Tambahkan ke Layar Utama”." : "Buka cepat dari layar utama, tanpa browser."}
+        <b style={{ display: "block", fontSize: 13.5, lineHeight: 1.3 }}>Pasang di HP</b>
+        <span className="small muted" style={{ lineHeight: 1.35, display: "block" }}>
+          {ios ? "Ketuk ikon Bagikan → “Tambahkan ke Layar Utama”." : "Buka dari layar utama, tanpa browser."}
         </span>
       </div>
       {prompt && (
@@ -57,13 +81,13 @@ export default function Pwa() {
           onClick={async () => {
             await prompt.prompt();
             await prompt.userChoice;
-            setPrompt(null);
+            onSelesai();
           }}
         >
           Pasang
         </button>
       )}
-      <button className="btn btn-sm btn-ghost" onClick={() => setTutup(true)} aria-label="Tutup">
+      <button className="btn btn-sm btn-ghost" onClick={onTutup} aria-label="Tutup">
         ✕
       </button>
     </div>

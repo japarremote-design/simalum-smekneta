@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { useTinggiKeCssVar } from "@/lib/ukur";
 
 export type NavBawah = { href: string; label: string; ikon: React.ReactNode; badge?: number };
 
@@ -11,6 +12,11 @@ export type NavBawah = { href: string; label: string; ikon: React.ReactNode; bad
 export default function BottomNav({ items }: { items: NavBawah[] }) {
   const path = usePathname();
   const [laci, setLaci] = useState(false);
+  const navRef = useRef<HTMLElement>(null);
+
+  // tinggi menu bawah ditulis ke --nav-bawah supaya tombol WhatsApp dan
+  // ajakan "Pasang di HP" bisa menumpuk di atasnya, tidak saling menindih
+  useTinggiKeCssVar(navRef, "--nav-bawah");
 
   const bukaLaci = () => {
     const sb = document.getElementById("sidebar");
@@ -25,7 +31,7 @@ export default function BottomNav({ items }: { items: NavBawah[] }) {
   return (
     <>
       {laci && <div id="scrim" onClick={bukaLaci} />}
-      <nav id="bottomnav" className="no-print" aria-label="Menu utama">
+      <nav id="bottomnav" ref={navRef} className="no-print" aria-label="Menu utama">
         {items.map((n) => (
           <Link key={n.href} href={n.href} className={"bn-item" + (aktif(n.href) ? " on" : "")} onClick={() => setLaci(false)}>
             <span className="bn-ikon">

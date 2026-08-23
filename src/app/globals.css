@@ -200,8 +200,15 @@ button[disabled]{opacity:.55;cursor:not-allowed}
 }
 
 /* ================= tombol WhatsApp ================= */
+/* Tiga elemen mengambang di sisi bawah: menu bawah, ajakan pasang, tombol WA.
+   Tingginya diukur sendiri oleh komponennya lalu ditulis ke variabel di bawah,
+   supaya tidak pernah saling menindih berapa pun tinggi masing-masing. */
+:root{ --nav-bawah:0px; --pasang-tinggi:0px; }
+
 .wa-fab{
-  position:fixed;right:16px;bottom:calc(20px + env(safe-area-inset-bottom));z-index:75;
+  position:fixed;right:16px;z-index:75;
+  bottom:calc(26px + var(--nav-bawah) + var(--pasang-tinggi) + env(safe-area-inset-bottom));
+  transition:bottom .22s ease;
   display:inline-flex;align-items:center;gap:0;overflow:hidden;
   height:56px;padding:0 15px;border-radius:999px;
   background:#25D366;color:#fff;text-decoration:none;
@@ -226,7 +233,7 @@ button[disabled]{opacity:.55;cursor:not-allowed}
   100%{transform:scale(1.45);opacity:0}
 }
 @media(max-width:860px){
-  .wa-fab{bottom:calc(80px + env(safe-area-inset-bottom));right:14px;height:52px}
+  .wa-fab{right:14px;height:52px}
 }
 @media(prefers-reduced-motion:reduce){
   .wa-denyut{animation:none;opacity:0}
@@ -235,12 +242,13 @@ button[disabled]{opacity:.55;cursor:not-allowed}
 
 /* ================= ajakan pasang di HP ================= */
 .pasang-bar{
-  position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:78;
-  display:flex;align-items:center;gap:11px;
-  background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;
+  position:fixed;left:12px;right:12px;z-index:78;
+  bottom:calc(12px + var(--nav-bawah) + env(safe-area-inset-bottom));
+  display:flex;align-items:center;gap:10px;
+  background:var(--card);border:1px solid var(--line);border-radius:14px;padding:9px 11px;
   box-shadow:0 16px 40px -20px rgba(0,0,0,.6);max-width:520px;margin:0 auto
 }
-@media(max-width:860px){ .pasang-bar{bottom:calc(84px + env(safe-area-inset-bottom))} }
+
 
 /* ================= footer ================= */
 .footer{border-top:1px solid var(--line);margin-top:26px;background:var(--card)}
