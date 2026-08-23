@@ -1,7 +1,7 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIK = ["/login", "/tracer", "/auth"];
+const PUBLIK = ["/login", "/tracer", "/auth", "/setup"];
 
 /** Berkas yang HARUS bisa diakses tanpa login, kalau tidak:
  *  - manifest & sw.js diblokir → tombol "Pasang di HP" tidak muncul

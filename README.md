@@ -60,12 +60,22 @@ Isi `.env.local` dari **Supabase → Project Settings → API**:
 
 Tidak ada akun admin bawaan — harus dibuat sekali di awal. Pilih salah satu cara.
 
-**Cara A — lewat dashboard Supabase (tanpa perlu terminal, paling praktis kalau langsung deploy ke Vercel)**
+**Cara A — lewat halaman `/setup` di aplikasi sendiri (paling gampang)**
+
+1. Buka `https://alamat-aplikasi-anda/setup`
+2. Isi nama, email, dan password → **Buat akun admin**
+3. Selesai. Langsung bisa login lewat tab **Login Admin**.
+
+Halaman ini hanya hidup selama **belum ada satu pun admin**. Begitu akun pertama jadi,
+halaman itu mengunci dirinya sendiri secara permanen — jadi tidak bisa dipakai orang lain
+untuk menyelundupkan akun admin. Syaratnya `SUPABASE_SERVICE_ROLE_KEY` sudah terisi di
+Environment Variables, karena pembuatan akun dilakukan di sisi server.
+
+**Cara B — lewat dashboard Supabase**
 
 1. Supabase → **Authentication → Users → Add user → Create new user**.
-2. Isi email (mis. `admin@smkn1tambelangan.sch.id`) dan password. Centang **Auto Confirm User**.
-3. **Wajib**, kalau dilewati akun ini tetap dianggap alumni dan ditolak saat login admin.
-   Buka **SQL Editor** lalu jalankan (ganti emailnya):
+2. Isi email dan password. Centang **Auto Confirm User**.
+3. Buka **SQL Editor** lalu jalankan (ganti emailnya):
 
    ```sql
    update public.profiles
@@ -75,21 +85,11 @@ Tidak ada akun admin bawaan — harus dibuat sekali di awal. Pilih salah satu ca
    returning id, nama, peran;
    ```
 
-   **Perhatikan `returning` di baris terakhir — jangan dihapus.** Tanpa itu, SQL Editor
-   Supabase selalu menjawab *"Success. No rows returned"* baik perintahnya mengubah data
-   maupun tidak, jadi om tidak akan tahu berhasil atau tidak. Dengan `returning`:
+   **Jangan hapus `returning`.** Tanpa itu SQL Editor selalu menjawab *"Success. No rows
+   returned"* baik berhasil maupun tidak. Dengan `returning`: muncul baris berisi `admin`
+   = berhasil; tetap kosong = user dengan email itu belum ada.
 
-   - **muncul satu baris berisi `admin`** → berhasil, lanjut login;
-   - **tetap "Success. No rows returned"** → tidak ada yang berubah, artinya user dengan
-     email itu belum ada. Ulangi langkah 1–2, atau cek daftar akun dengan:
-
-     ```sql
-     select u.email, u.email_confirmed_at is not null as terkonfirmasi, p.peran
-     from auth.users u left join public.profiles p on p.id = u.id
-     order by u.created_at desc;
-     ```
-
-4. Login di halaman `/login` → tab **Login Admin**, pakai email & password tadi.
+4. Login di halaman `/login` → tab **Login Admin**.
 
 **Cara B — lewat terminal** (perlu `.env.local` sudah terisi, termasuk `SUPABASE_SERVICE_ROLE_KEY`)
 

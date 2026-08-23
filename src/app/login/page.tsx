@@ -76,8 +76,8 @@ export default function LoginPage() {
             </>
           ) : (
             <>
-              Akun admin dibuat lewat Supabase (lihat README). Alumni yang ingin memperbarui data tanpa akun bisa lewat{" "}
-              <Link href="/tracer">form tracer study</Link>.
+              Belum punya akun admin sama sekali? <Link href="/setup">Buat admin pertama</Link>. Alumni yang ingin
+              memperbarui data tanpa akun bisa lewat <Link href="/tracer">form tracer study</Link>.
             </>
           )}
         </div>
