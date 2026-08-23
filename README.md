@@ -58,9 +58,39 @@ Isi `.env.local` dari **Supabase → Project Settings → API**:
 
 ### 3. Buat akun admin pertama
 
+Tidak ada akun admin bawaan — harus dibuat sekali di awal. Pilih salah satu cara.
+
+**Cara A — lewat dashboard Supabase (tanpa perlu terminal, paling praktis kalau langsung deploy ke Vercel)**
+
+1. Supabase → **Authentication → Users → Add user → Create new user**.
+2. Isi email (mis. `admin@smkn1tambelangan.sch.id`) dan password. Centang **Auto Confirm User**.
+3. **Wajib**, kalau dilewati akun ini tetap dianggap alumni dan ditolak saat login admin.
+   Buka **SQL Editor** lalu jalankan (ganti emailnya):
+
+   ```sql
+   update public.profiles
+   set peran = 'admin', nama = 'Admin Sekolah'
+   where id = (select id from auth.users
+               where email = 'admin@smkn1tambelangan.sch.id');
+   ```
+
+4. Login di halaman `/login` → tab **Login Admin**, pakai email & password tadi.
+
+**Cara B — lewat terminal** (perlu `.env.local` sudah terisi, termasuk `SUPABASE_SERVICE_ROLE_KEY`)
+
 ```bash
 node scripts/buat-admin.mjs admin@smkn1tambelangan.sch.id rahasia123 "Admin Sekolah"
 ```
+
+Cara ini langsung sekalian menyetel perannya jadi admin, tidak perlu SQL tambahan.
+
+> **Kenapa harus ada langkah menyetel peran?** Setiap akun baru otomatis dibuatkan
+> profil dengan peran **alumni** — ini disengaja, supaya alumni yang mendaftar tidak
+> pernah tidak sengaja punya akses admin. Naik pangkat jadi admin harus disengaja.
+
+Untuk menambah admin berikutnya (mis. guru BK), ulangi cara yang sama. Pakai
+`peran = 'operator'` kalau ingin membedakan staf biasa dari admin penuh — keduanya
+punya akses kelola yang sama saat ini.
 
 ### 4. (Opsional) Isi data contoh
 
@@ -87,7 +117,7 @@ Buka <http://localhost:3000>.
 
 1. Push folder ini ke GitHub.
 2. Buka <https://vercel.com> → **Add New → Project** → pilih repositorinya.
-3. Di **Environment Variables**, isi keempat variabel yang sama seperti `.env.local`.
+3. Di **Environment Variables**, isi semua variabel yang sama seperti `.env.local`.
 4. **Deploy**. Aplikasi langsung online, misalnya `https://alumni-smkn1tambelangan.vercel.app`.
    Setelah tahu alamat pastinya, isi `NEXT_PUBLIC_SITE_URL` dengan alamat itu lalu deploy ulang sekali — supaya preview link di WhatsApp memakai alamat yang benar.
 5. Sebarkan link `/tracer` ke grup WhatsApp alumni — kiriman mereka masuk ke menu **Tracer masuk** untuk diverifikasi.
