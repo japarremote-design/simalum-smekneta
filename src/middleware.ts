@@ -1,12 +1,15 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+/** Halaman yang boleh dibuka tanpa login. */
 const PUBLIK = ["/login", "/tracer", "/auth", "/setup"];
 
-/** Berkas yang HARUS bisa diakses tanpa login, kalau tidak:
+/** Berkas & endpoint yang HARUS bisa diakses tanpa login, kalau tidak:
  *  - manifest & sw.js diblokir → tombol "Pasang di HP" tidak muncul
- *  - opengraph-image diblokir → preview link di WhatsApp/Facebook kosong */
+ *  - opengraph-image diblokir → preview link di WhatsApp/Facebook kosong
+ *  - /api/ping diblokir → penjaga anti-jeda Supabase tidak menyentuh database */
 const BERKAS_PUBLIK = [
+  "/api/ping",
   "/manifest.webmanifest",
   "/sw.js",
   "/offline.html",
